@@ -21,6 +21,8 @@ import android.app.Activity
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.Context
+import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -51,6 +53,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+
 
 class BleOperationsActivity : AppCompatActivity() {
 
@@ -226,7 +229,27 @@ class BleOperationsActivity : AppCompatActivity() {
             }
 
             onCharacteristicChanged = { _, characteristic ->
-                log("Value changed on ${characteristic.uuid}: ${characteristic.value.toHexString()}")
+                val stringValue = characteristic.value.toString(Charsets.UTF_8);
+                    val am =
+                        applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                    am.abandonAudioFocus(null);
+
+
+                if (stringValue == "r") {
+                    val i = Intent("com.android.music.musicservicecommand")
+                    i.putExtra("command", "next")
+                    sendBroadcast(i)
+                } else if (stringValue == "t") {
+                    val i = Intent("com.android.music.musicservicecommand")
+                    i.putExtra("command", "togglepause")
+                    sendBroadcast(i)
+                } else if (stringValue == "l") {
+                    val i = Intent("com.android.music.musicservicecommand")
+                    i.putExtra("command", "previous")
+                    sendBroadcast(i)
+                }
+
+                log("Value changed on ${characteristic.uuid}: ${stringValue}")
             }
 
             onNotificationsEnabled = { _, characteristic ->
